@@ -1,77 +1,116 @@
 from pathlib import Path
 
-import pandas
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import math
 
+class RoutingData:
 
-# O(n)
-def load_data(data_path:Path|str|None = None) -> pd.DataFrame:
-    """ Loads data from CSV file. Uses default data if none is provided."""
-    if not data_path:
-        data_path: Path = Path(__file__).resolve().parent / "data/data.csv"
+    # O(n)
+    def __init__(self, teams:int, emps:int, data_path:Path|str|None = None):
+        if not data_path:
+            data_path: Path = Path(__file__).resolve().parent / "data/data.csv"
 
-    df = pd.read_csv(data_path)
+        self.df = pd.read_csv(data_path)
 
-    # normalize coordinates so home location is centered 0.0, 0.0
+        self._normalize_coordinates()
+        self._generate_distance_matrix()
 
-    lon_offset:float = df.loc[df['location'] == 'home', 'lon'].iloc[0]
-    lat_offset:float = df.loc[df['location'] == 'home', 'lat'].iloc[0]
+        self.teams:int = teams # vehicles,
 
-    # 1 degree of Longitude = cosine (latitude in radians) * length of degree (miles) at equator
-    lat_miles:float = 69.17
-    lon_miles:float = math.cos(math.radians(lat_offset)) * lat_miles
+        # demands is budget minutes per jobs.
+        self.demands:list[int] = self.df['budget'].tolist()  #[20 for _ in range(len(self.distance_matrix))]
 
-    df['x'] = (df['lon'] - lon_offset) * lon_miles
-    df['y'] = (df['lat'] - lat_offset) * lat_miles
+        total_demands:int = self.df['budget'].sum()
 
-    return df
+        # interestingly, demands * 1.1 gives better results sometimes
+        # 300 is max cleaning minutes per person
+        # 1.25 is a modifer because OT is okay.
+        max_demand:float = 300 * 1.25
 
-
-# O(n^2) we do exit the loop early but it is still not logarithmic.
-def generate_distance_matrix(df:pd.DataFrame) -> pd.DataFrame:
-
-    n:int = len(df)
-    matrix:np.ndarray = np.zeros((n, n))
-
-    for l1 in range(n):
-        for l2 in range(n):
-            # Early exit condition; matrix is mirrored so we do not need to continue past l2 == l1
-            if l2 > l1:
-                break
-
-            distance:float = manhattan_distance(df.iloc[l1].loc['x'], df.iloc[l1].loc['y'],
-                                                df.iloc[l2].loc['x'], df.iloc[l2].loc['y'])
-            matrix[l1, l2] = distance
-            matrix[l2, l1] = distance
-
-    return pandas.DataFrame(matrix, index=df['location'], columns=df['location'])
+        if total_demands / emps > max_demand:
+            # need some more testing on this. Doesn't catch all errors.
+            raise CapacityError("Not enough employees!")
 
 
-#O(n)
-def manhattan_distance(x1:float, y1:float, x2:float, y2:float) -> float:
-    """ Returns the Manhattan distance between two points. """
-    return abs(x1 - x2) + abs(y1 - y2)
+        # we need to figure out how to distribute 2 3 or 4 person teams
+        # ideally we will also test different distributions...
+        # for now lets just distribute out the employees we have..
+        team_sizes = [emps // teams] * teams
+        for i in range(emps % teams ):
+            team_sizes[i] += 1
+
+        self.vehicle_capacities:list[int] = \
+            [int(capacity * max_demand) for capacity in team_sizes]
+
+
+    # O(n)
+    def _normalize_coordinates(self):
+        # normalize coordinates so home location is centered 0.0, 0.0
+        lon_offset:float = self.df.loc[self.df['location'] == 'home', 'lon'].iloc[0]
+        lat_offset:float = self.df.loc[self.df['location'] == 'home', 'lat'].iloc[0]
+
+        # 1 degree of Longitude = cosine (latitude in radians) * length of degree (miles) at equator
+        lat_miles:float = 69.17
+        lon_miles:float = math.cos(math.radians(lat_offset)) * lat_miles
+
+        self.df['x'] = ((self.df['lon'] - lon_offset) * lon_miles)
+        self.df['y'] = ((self.df['lat'] - lat_offset) * lat_miles)
 
 
 
+    # O(n^2) we do exit the loop early but it is still not logarithmic.
+    def _generate_distance_matrix(self):
 
-def plot_locations(df:pd.DataFrame) -> None:
+        n:int = len(self.df)
+        self.distance_matrix:list[list[float]] = [[0 for _ in range(n)] for _ in range(n)]
 
-    plt.scatter(df['x'], df['y'])
+        for l1 in range(n):
+            for l2 in range(n):
+                # Early exit condition; matrix is mirrored so we do not need to continue past l2 == l1
+                if l2 > l1:
+                    break
 
-    # for i, label in enumerate(df['location']):
-    #     plt.annotate(label, (df['x'][i], df['y'][i]))
+                distance:float = self._manhattan_distance(l1, l2)
+                self.distance_matrix[l1][l2] = int(distance * 100)
+                self.distance_matrix[l2][l1] = int(distance * 100)
 
-    plt.show()
 
+
+    #O(n)
+    def _manhattan_distance(self, l1:int, l2:int) -> float:
+        """ Returns the Manhattan distance between two points. """
+        x1 = self.df.iloc[l1].loc['x']
+        y1 = self.df.iloc[l1].loc['y']
+        x2 = self.df.iloc[l2].loc['x']
+        y2 = self.df.iloc[l2].loc['y']
+        return abs(x1 - x2) + abs(y1 - y2)
+
+
+    #O(n)
+    def plot_locations(self):
+
+        plt.scatter(self.df['x'], self.df['y'])
+
+        # for i, label in enumerate(df['location']):
+        #     plt.annotate(label, (df['x'][i], df['y'][i]))
+
+        plt.show()
+
+
+class CapacityError(Exception):
+    pass
 
 if __name__ == "__main__":
-    _df = load_data()
 
-    #dm = generate_distance_matrix(_df)
-    #print(dm)
 
-    plot_locations(_df)
+    _teams = 8
+    _emp = 26
+
+    rd = RoutingData(_teams, _emp)
+
+    #print(rd.distance_matrix)
+
+    print(rd.demands)
+    print(rd.vehicle_capacities)
+    #rd.plot_locations()
