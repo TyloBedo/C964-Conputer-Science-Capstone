@@ -1,3 +1,5 @@
+from typing import Callable
+
 from data_import import RoutingData
 
 from ortools.constraint_solver import routing_enums_pb2
@@ -10,53 +12,44 @@ class Router:
         self.solution = None
 
         self.rd = rd
-        self.dm:list[list] = rd.distance_matrix
-        self.vehicles:int = rd.teams # change to len capacity?
-        self.capacity:list[int] = rd.vehicle_capacities
-        self.demands:list[int] = rd.demands
-
 
         self.manager = pywrapcp.RoutingIndexManager(
-            len(self.dm), self.vehicles, 0
+            len(self.rd.dm), self.rd.teams, 0
         )
         self.routing = pywrapcp.RoutingModel(self.manager)
 
         self._set_dimensions()
 
-
     def _set_dimensions(self):
-        # Set max distance traveled by any vehicle.
-        # Once we add capacity maybe not required? We'll see.
 
-        # Create and register a transit callback.
-        transit_callback_index = self.routing.RegisterTransitCallback(self.get_distance)
-        demand_callback_index = self.routing.RegisterUnaryTransitCallback(self.demand_callback)
+        distance_callback_index = self.routing.RegisterTransitCallback(self.get_distance)
 
-        # Define cost of each arc.
-        ### I think we adjust this for 2-3-4 person teams..
-        self.routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
+        for vehicle in range(self.rd.teams):
+            callback = self.make_cost_callback(vehicle)
+            callback_index = self.routing.RegisterTransitCallback(callback)
+            self.routing.SetArcCostEvaluatorOfVehicle(callback_index, vehicle)
 
         self.routing.AddDimension(
-            transit_callback_index,
-            0,  # no slack
+            distance_callback_index,
+            0,
             15000,  # vehicle maximum travel distance miles * 100
-            True,  # start cumul to zero
+            True,
             "Distance",
         )
         self.routing.GetDimensionOrDie("Distance").SetGlobalSpanCostCoefficient(100)
 
 
+        demand_callback_index = self.routing.RegisterUnaryTransitCallback(self.demand_callback)
         self.routing.AddDimensionWithVehicleCapacity(
             demand_callback_index,
-            0,  # null capacity slack
-            self.capacity,  # vehicle maximum capacities
-            True,  # start cumul to zero
+            0,
+            self.rd.capacities,
+            True,
             "Capacity",
         )
 
 
     def solve(self):
-        # Setting first solution heuristic.
         search_parameters = pywrapcp.DefaultRoutingSearchParameters()
         search_parameters.first_solution_strategy = (
             routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
@@ -70,18 +63,24 @@ class Router:
     #
     ###############################
 
-    def demand_callback(self, l1:int):
-        """Returns the demand of the node."""
-        # Convert from routing variable Index to demands NodeIndex.
-        from_node:int = self.manager.IndexToNode(l1)
-        return self.demands[from_node]
+    def make_cost_callback(self, vehicle) -> Callable[[int, int], int]:
 
-    def get_distance(self, l1:int, l2:int):
+        def cost_callback(l1:int, l2:int) -> int:
+            return self.get_distance(l1, l2) * self.rd.team_sizes[vehicle]
+
+        return cost_callback
+
+
+    def demand_callback(self, l1:int) -> int:
+        """Returns the demand of the node."""
+        from_node:int = self.manager.IndexToNode(l1)
+        return self.rd.demands[from_node]
+
+    def get_distance(self, l1:int, l2:int) -> int:
         """Returns the distance between the two nodes."""
-        # Convert from routing variable Index to distance matrix NodeIndex.
         from_node:int = self.manager.IndexToNode(l1)
         to_node:int = self.manager.IndexToNode(l2)
-        return self.dm[from_node][to_node]
+        return self.rd.dm[from_node][to_node]
 
     ###############################
     #
@@ -97,7 +96,7 @@ class Router:
 
         print(f"Objective: {self.solution.ObjectiveValue()}")
         total_route_distance:int = 0
-        for vehicle_id in range(self.vehicles):
+        for vehicle_id in range(self.rd.teams):
             if not self.routing.IsVehicleUsed(self.solution, vehicle_id):
                 continue
             index = self.routing.Start(vehicle_id)
@@ -111,7 +110,11 @@ class Router:
                     previous_index, index, vehicle_id
                 )
             plan_output += f"{self.manager.IndexToNode(index)}\n"
+
             plan_output += f"Distance of the route: {route_distance / 100} miles\n"
+
+            plan_output += f"number of people: {self.rd.team_sizes[vehicle_id]} people\n"
+
             print(plan_output)
 
             total_route_distance += route_distance
@@ -128,10 +131,10 @@ if __name__ == "__main__":
     _teams = 8
     _emp = 26
 
-    rd = RoutingData(_teams, _emp)
+    _rd = RoutingData(_teams, _emp)
 
 
-    route = Router(rd)
+    route = Router(_rd)
 
     route.solve()
 

@@ -36,12 +36,12 @@ class RoutingData:
         # we need to figure out how to distribute 2 3 or 4 person teams
         # ideally we will also test different distributions...
         # for now lets just distribute out the employees we have..
-        team_sizes = [emps // teams] * teams
+        self.team_sizes = [emps // teams] * teams
         for i in range(emps % teams ):
-            team_sizes[i] += 1
+            self.team_sizes[i] += 1
 
-        self.vehicle_capacities:list[int] = \
-            [int(capacity * max_demand) for capacity in team_sizes]
+        self.capacities:list[int] = \
+            [int(capacity * max_demand) for capacity in self.team_sizes]
 
 
     # O(n)
@@ -97,6 +97,10 @@ class RoutingData:
 
         plt.show()
 
+    @property
+    def dm(self):
+        return self.distance_matrix
+
 
 class CapacityError(Exception):
     pass
@@ -110,7 +114,12 @@ if __name__ == "__main__":
     rd = RoutingData(_teams, _emp)
 
     #print(rd.distance_matrix)
+    #  0 ->  20 ->  17 ->  9 -> 0
+    print(rd.dm[0][20] / 100)
+    print(rd.dm[20][17] / 100)
+    print(rd.dm[17][9] / 100)
+    print(rd.dm[9][0] / 100)
 
-    print(rd.demands)
-    print(rd.vehicle_capacities)
+    #print(rd.demands)
+    #print(rd.capacities)
     #rd.plot_locations()
