@@ -94,30 +94,37 @@ class Router:
             print("No solution found !")
             return
 
-        print(f"Objective: {self.solution.ObjectiveValue()}")
         total_route_distance:int = 0
         for vehicle_id in range(self.rd.teams):
+
             if not self.routing.IsVehicleUsed(self.solution, vehicle_id):
                 continue
+
+            people:int = self.rd.team_sizes[vehicle_id]
+            route_distance:int = 0
+            budget_minutes:int = 0
             index = self.routing.Start(vehicle_id)
-            plan_output = f"Route for vehicle {vehicle_id}:\n"
-            route_distance = 0
+
+            print(f"Route for vehicle {vehicle_id}:")
+            plan_output = ""
             while not self.routing.IsEnd(index):
-                plan_output += f" {self.manager.IndexToNode(index)} -> "
+                plan_output += f"{self.manager.IndexToNode(index)} -> "
                 previous_index = index
                 index = self.solution.Value(self.routing.NextVar(index))
+                budget_minutes += self.rd.demands[self.manager.IndexToNode(index)]
                 route_distance += self.routing.GetArcCostForVehicle(
                     previous_index, index, vehicle_id
                 )
-            plan_output += f"{self.manager.IndexToNode(index)}\n"
-
-            plan_output += f"Distance of the route: {route_distance / 100} miles\n"
-
-            plan_output += f"number of people: {self.rd.team_sizes[vehicle_id]} people\n"
+            plan_output += f"{self.manager.IndexToNode(index)}"
 
             print(plan_output)
 
-            total_route_distance += route_distance
+            print(f"Distance of the route: {route_distance / 100 / people} miles")
+            print(f"Number of people: {people} people")
+            print(f"Total Cleaning Minutes: {budget_minutes} minutes\n")
+
+
+            total_route_distance += route_distance / people
 
         print(f"Total of the route distances: {total_route_distance / 100} miles")
 
