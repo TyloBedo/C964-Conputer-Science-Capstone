@@ -7,9 +7,8 @@ import math
 class RoutingData:
 
     # O(n)
-    def __init__(self, teams:int, emps:int, data_path:Path|str|None = None):
-        if not data_path:
-            data_path: Path = Path(__file__).resolve().parent / "data/data.csv"
+    def __init__(self, teams:int, emps:int, data_path:Path|str):
+
 
         self.df = pd.read_csv(data_path)
 
@@ -108,10 +107,12 @@ class CapacityError(Exception):
 if __name__ == "__main__":
 
 
+    data_path: Path = Path(__file__).resolve().parent / "data/test_data1.csv"
+
     _teams = 8
     _emp = 26
 
-    rd = RoutingData(_teams, _emp)
+    rd = RoutingData(_teams, _emp, data_path)
 
     #print(rd.distance_matrix)
     #  0 ->  20 ->  17 ->  9 -> 0
