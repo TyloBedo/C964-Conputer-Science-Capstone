@@ -1,11 +1,13 @@
-from fastapi import FastAPI
 from fastapi import FastAPI, Request
+from pydantic import BaseModel
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 
 app_path:Path = Path(__file__).parent
+
+data_path:Path = Path(__file__).parent.parent / "data"
 
 app = FastAPI()
 
@@ -31,4 +33,20 @@ def documentation(request: Request):
         request=request, name="documentation.html"
     )
 
-['index', 'doc', 'about' ]
+@app.get("/load-data/{dataset_id}")
+def load_data(dataset_id: str):
+    print("yes")
+    with open(data_path / f"test_{dataset_id}.csv", "r") as file:
+        data:str = file.read()
+        return {'data': data}
+
+
+
+class DataObject(BaseModel):
+    data:str
+@app.post("/submit-data")
+def submit_data(data: DataObject):
+    print(data)
+    return {"data": "okay"}
+
+

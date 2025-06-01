@@ -1,0 +1,21 @@
+.form-floating {
+  position: relative;
+  max-width: 300px; /* not relevant */
+  margin: 40px 20px; /* not relevant */
+}
+
+.form-floating:before {
+  content: '';
+  position: absolute;
+  top: 1px; /* border-width (default by BS) */
+  left: 1px; /* border-width (default by BS) */
+  width: calc(100% - 14px); /* to show scrollbar */
+  height: 32px;
+  border-radius: 4px; /* (default by BS) */
+  background-color: #ffffff;
+}
+
+.form-floating textarea.form-control {
+  padding-top: 32px; /* height of pseudo element */
+  min-height: 80px; /* not relevant */
+}

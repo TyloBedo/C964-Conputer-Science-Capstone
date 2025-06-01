@@ -134,8 +134,6 @@ class Router:
 
 
 
-
-
 if __name__ == "__main__":
 
     _teams = 8
