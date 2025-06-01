@@ -8,12 +8,10 @@ from ortools.constraint_solver import pywrapcp
 class Router:
 
     def __init__(self, rd:"RoutingData"):
-        self.solution = None
-
-        self.routes:list = []
 
         self.rd = rd
 
+        self.routes:list = []
         self.manager = pywrapcp.RoutingIndexManager(
             len(self.rd.dm), self.rd.teams, 0
         )
@@ -56,9 +54,11 @@ class Router:
             routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
         )
 
-        self.solution = self.routing.SolveWithParameters(search_parameters)
-
-        self._parse_solution()
+        solution = self.routing.SolveWithParameters(search_parameters)
+        if not solution:
+            print("No solution found !")
+            return
+        self._parse_solution(solution)
 
     ###############################
     #
@@ -90,12 +90,12 @@ class Router:
     #
     ###############################
 
-    def _parse_solution(self):
-        if not self.solution:
-            print("No solution found !")
-            return
+    def _parse_solution(self, solution):
 
         for team in range(self.rd.teams):
+            if not self.routing.IsVehicleUsed(solution, team):
+                continue
+
             index = self.routing.Start(team)
             team_data:dict = {"route":[self.manager.IndexToNode(index)],
                               'budget_minutes':0, 'distance':0, 'team':team,
@@ -103,7 +103,7 @@ class Router:
 
             while not self.routing.IsEnd(index):
                 previous_index = index
-                index = self.solution.Value(self.routing.NextVar(index))
+                index = solution.Value(self.routing.NextVar(index))
                 team_data['route'].append(self.manager.IndexToNode(index))
                 team_data['budget_minutes'] += self.rd.demands[self.manager.IndexToNode(index)]
                 team_data['team_size'] = self.rd.team_sizes[team]
@@ -114,6 +114,24 @@ class Router:
 
 
             self.routes.append(team_data)
+
+    def _route_list(self, solution):
+
+        for team in range(self.rd.teams):
+            # skip vehicle if team has no jobs
+            if not self.routing.IsVehicleUsed(solution, team):
+                continue
+
+            index = self.routing.Start(team)
+            team_data:list = [self.manager.IndexToNode(index)]
+
+            while not self.routing.IsEnd(index):
+                index = solution.Value(self.routing.NextVar(index))
+                team_data.append(self.manager.IndexToNode(index))
+
+            self.routes.append(team_data)
+
+
 
 
 

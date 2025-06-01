@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Callable
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -11,8 +12,8 @@ class RoutingData:
 
 
         self.df = pd.read_csv(data_path)
-
         self._normalize_coordinates()
+
         self._generate_distance_matrix()
 
         self.teams:int = teams # vehicles,
@@ -46,19 +47,21 @@ class RoutingData:
     # O(n)
     def _normalize_coordinates(self):
         # normalize coordinates so home location is centered 0.0, 0.0
-        lon_offset:float = self.df.loc[self.df['location'] == 'home', 'lon'].iloc[0]
-        lat_offset:float = self.df.loc[self.df['location'] == 'home', 'lat'].iloc[0]
+        home_longitude:float = self.df.loc[0, 'longitude']
+        home_latitude:float = self.df.loc[0, 'latitude']
 
-        # 1 degree of Longitude = cosine (latitude in radians) * length of degree (miles) at equator
-        lat_miles:float = 69.17
-        lon_miles:float = math.cos(math.radians(lat_offset)) * lat_miles
+        # 1 degree of latitude = ~69.17 miles. Varies insignificantly based on distance from the equator.
+        # 1 degree of Longitude = cosine(latitude in radians) * length of 1 degree of latitude at the equator.
+        latitude_miles:float = 69.17
+        longitude_miles:float = math.cos(math.radians(home_latitude)) * latitude_miles
 
-        self.df['x'] = ((self.df['lon'] - lon_offset) * lon_miles)
-        self.df['y'] = ((self.df['lat'] - lat_offset) * lat_miles)
+        # convert coordinates to x, y as miles.
+        self.df['x'] = ((self.df['longitude'] - home_longitude) * longitude_miles)
+        self.df['y'] = ((self.df['latitude'] - home_latitude) * latitude_miles)
 
 
 
-    # O(n^2) we do exit the loop early but it is still not logarithmic.
+    # O(n^2) we do exit the loop early, but it is still not logarithmic.
     def _generate_distance_matrix(self):
 
         n:int = len(self.df)
@@ -67,10 +70,12 @@ class RoutingData:
         for l1 in range(n):
             for l2 in range(n):
                 # Early exit condition; matrix is mirrored so we do not need to continue past l2 == l1
-                if l2 > l1:
+                if l2 >= l1:
                     break
 
                 distance:float = self._manhattan_distance(l1, l2)
+                # Our routing algorthm only accepts int values.
+                # Multiply distance by 100 to maintain precision.
                 self.distance_matrix[l1][l2] = int(distance * 100)
                 self.distance_matrix[l2][l1] = int(distance * 100)
 
@@ -88,12 +93,7 @@ class RoutingData:
 
     #O(n)
     def plot_locations(self):
-
         plt.scatter(self.df['x'], self.df['y'])
-
-        # for i, label in enumerate(df['location']):
-        #     plt.annotate(label, (df['x'][i], df['y'][i]))
-
         plt.show()
 
     @property
@@ -124,3 +124,5 @@ if __name__ == "__main__":
     #print(rd.demands)
     #print(rd.capacities)
     #rd.plot_locations()
+
+    #print (rd.df.loc[0, ['latitude', 'longitude']])

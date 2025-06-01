@@ -30,10 +30,10 @@ class RouteAnalyzer:
         self.df['travel_percent'] = self.df['travel_minutes'] / (self.df['budget_minutes'] * 4)
 
 
-        #
-        # print(self.df[['travel_percent','budget_minutes','travel_minutes']])
-        #
-        # print(self.df)
+
+        print(self.df[['travel_percent','budget_minutes','travel_minutes']])
+
+        print(self.df)
 
 
     def plot_route(self):
@@ -64,8 +64,8 @@ class RouteAnalyzer:
 if __name__ == "__main__":
 
 
-    data_path: Path = Path(__file__).resolve().parent / "data/test_data1.csv"
+    data_path: Path = Path(__file__).resolve().parent / "data/test_data3.csv"
 
     ra = RouteAnalyzer(8, 26, data_path)
 
-    ra.plot_route()
+    #ra.plot_route()
