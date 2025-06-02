@@ -1,12 +1,12 @@
 # TODO
 #   WebUI workflow...
-#       Enter data -> textbox to paste or upload csv?
-#       Also allow to use pre selected data
-#       Need to also enter # of teams and people
-#       WebUI sends data to backend for processing
-#       Backend processes data. Checks if enough EMP were entered
+#       Page 2:
+#           We don't actually NEED this....
+#           Need to also enter # of teams and people
+#           WebUI sends data to backend for processing
+#           Backend processes data. Checks if enough EMP were entered
 #           budget_minutes /(div) emp < ~350.
-#           Teams /(div) emp is between 2 and 4
+#               Teams /(div) emp is between 2 and 4
 #       Backend finds solution
 #       Backend sends solution data to frontend
 #   Backend Solution:

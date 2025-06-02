@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Callable
-
+from io import StringIO
 import pandas as pd
 import matplotlib.pyplot as plt
 import math
@@ -8,10 +8,13 @@ import math
 class RoutingData:
 
     # O(n)
-    def __init__(self, teams:int, emps:int, data_path:Path|str):
+    def __init__(self, teams:int, emps:int, data:Path|str):
 
+        if type(data) == str:
+            self.df = pd.read_csv(StringIO(data))
+        else:
+            self.df = pd.read_csv(data)
 
-        self.df = pd.read_csv(data_path)
         self._normalize_coordinates()
 
         self._generate_distance_matrix()

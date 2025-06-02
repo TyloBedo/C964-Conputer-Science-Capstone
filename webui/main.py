@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
+from route_analyzer import RouteAnalyzer
 
 app_path:Path = Path(__file__).parent
 
@@ -46,7 +47,10 @@ class DataObject(BaseModel):
     data:str
 @app.post("/submit-data")
 def submit_data(data: DataObject):
-    print(data)
-    return {"data": "okay"}
+    ra = RouteAnalyzer(8,26, data.data)
+
+    print(ra.df)
+
+    return {"data": ra.plot_route()}
 
 

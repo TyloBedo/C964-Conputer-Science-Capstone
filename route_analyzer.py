@@ -1,9 +1,13 @@
 from router import Router
 import pandas as pd
 from data_import import RoutingData
-from matplotlib import pyplot as plt
 from pathlib import Path
+import base64
+from io import BytesIO
 
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
 
 
 
@@ -40,25 +44,35 @@ class RouteAnalyzer:
         data = {'x':[0], 'y':[0], 'c':[0]}
         for i in range(len(self.df) - 1):
             route = self.df['route'].iloc[i]
+            _x = []
+            _y = []
+            _c = []
             for location in route:
-                if location == 0:
-                    continue
-                _x = self.rd.df['x'].iloc[location]
-                _y = self.rd.df['y'].iloc[location]
 
-                data['x'].append(_x)
-                data['y'].append(_y)
-                data['c'].append(i + 1)
+                _x.append(self.rd.df['x'].iloc[location])
+                _y.append(self.rd.df['y'].iloc[location])
+                _c.append(i+1)
+            plt.plot(_x, _y, label=i+1, marker='o', linestyle='-')
+                # data['x'].append(_x)
+                # data['y'].append(_y)
+                # data['c'].append(i + 1)
 
-        plt.scatter(data['x'], data['y'], c=data['c'], cmap="tab20")
+        #plt.scatter(data['x'], data['y'], c=data['c'], cmap="tab20")
 
-        plt.show()
+        plt.title("Team Distribution Plot")
+        plt.legend()
 
+        # Save the figure to a buffer
+        buf = BytesIO()
+        plt.savefig(buf, format='png')
+        buf.seek(0)
 
+        base64_str = base64.b64encode(buf.read()).decode('utf-8')
+        data_uri = f"data:image/png;base64,{base64_str}"
 
+        #plt.show()
 
-
-
+        return data_uri
 
 
 if __name__ == "__main__":
@@ -68,4 +82,4 @@ if __name__ == "__main__":
 
     ra = RouteAnalyzer(8, 26, data_path)
 
-    #ra.plot_route()
+    ra.plot_route()

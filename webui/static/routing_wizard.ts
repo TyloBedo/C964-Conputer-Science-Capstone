@@ -45,7 +45,18 @@ document.addEventListener("DOMContentLoaded", () => {
             body: JSON.stringify(data)
         })
         .then(resp => resp.json())
-        .then(data => {console.log(data); })
+        .then(data => {
+
+            const image_div = document.getElementById("image-location");
+            const image = document.createElement("img");
+            image.src = data['data'];
+            image.alt = "Plot image";
+            image.id = "plot-image";
+
+            image_div.appendChild(image);
+
+
+        })
         .catch(error => {console.error(error);
         });
     })
