@@ -4,7 +4,6 @@
 {% block head %}
 
 <script src="static/routing_wizard.js" type="application/javascript"></script>
-
 <link rel="stylesheet" href="static/routing_wizard.css">
 
 {% endblock head %}
@@ -13,46 +12,96 @@
 
 {% block content %}
 
-<div class="container">
+<div class="container-fluid">
+    <div class="row">
+{#      sidebar start #}
+        <div class="col-3 sticky-top sidebar">
+{#            step1 sidebar #}
+              <div class="step1">
+                  <div class="row mt-3">
+                  <ul style="text-align:center;" class="list-group list-unstyled">
+                    <li class="list-group-item"> <h2>Instructions:</h2> </li>
+                    <li class="list-group-item">Upload CSV file containing columns "location", "latitude", "longitude", and "budget".</li>
+                    <li class="list-group-item">The first entry of your file should be your dispatch location.</li>
+                    <li class="list-group-item">Alternatively, paste data into the text area or select from sample data bellow.</li>
+                    <li class="list-group-item">
+                   <button type="button" id="data1" class="btn btn-primary load-data-set w-25">Test Data 1</button>
+                   <button type="button" id="data2" class="btn btn-primary load-data-set w-25">Test Data 2</button>
+                   <button type="button" id="data3" class="btn btn-primary load-data-set w-25">Test Data 3</button>
+                      </li>
+                  </ul>
+                  </div>
+              </div>
+
+            {# step2 sidebar #}
+            <div style="display: none;" class="row step2">
+                <ul style="text-align:center;" class="list-group list-unstyled">
+                  <li class="list-group-item"> <h2>Instructions:</h2> </li>
+                  <li class="list-group-item">Adjust the number of vehicles and number of employees you have available.</li>
+                  <li class="list-group-item">Based on the budget minutes of your job list you will need at least {{emp}} employees to complete your jobs.</li>
+                  <li class="list-group-item">You will need at least {{teams}} to complete your jobs today.</li>
+                </ul>
+            </div>
+
+            {# step3 sidebar #}
+            <div style="display: none;" class="row step3">
+                <ul style="text-align:center;" class="list-group list-unstyled">
+                    <li class="list-group-item"> <h2>Instructions:</h2> </li>
+                    <li class="list-group-item"> Utilize results!!!</li>
+                </ul>
+            </div>
+
+            {# continue sidebar #}
+
+        </div>
+{#      content start #}
+        <div class="col-6">
+{#            step1 content #}
+                <div class="row step1" >
+                    <div class="col mt-5">
+                      <ul class="list-group list-unstyled">
+                        <li>
+                          <label for="file" class="form-label">Upload File</label>
+                          <input type="file" class="form-control-file" id="file" accept=".csv" name="file" />
+                        </li>
+                      </ul>
+                      <div class="row mt-5 form-group">
+                        <label for="data-area">Data input</label>
+                        <textarea class="form-control" rows=15 name="data-area" id="data-area"></textarea>
+                        <button type="button" id="submit-data" class="btn btn-primary col-xs-2">Next</button>
+                      </div>
+                    </div>
+                </div>
+
+            {# step 2#}
+
+                <div class="row step2 mt-5">
+                            <label for="teams" class="col-sm-2 form-label">Teams</label>
+                            <input type="number" id="teams" class="form-control col-xs-2" name="teams" value="{{teams}}">
+
+                            <label for="employees" class="col-sm-2 form-label">Employees</label>
+                            <input type="number" id="employees" class="form-control col-xs-2" name="employees" value="{{employees}}">
+                            <input type="submit" id="gotostep3" class="btn btn-primary col-xs-2" value="Submit ">
+                    </div>
+
+            {# step 3#}
+
+            <div class="row step3 mt-5">
+
+                <h2>Results</h2>
 
 
-  <div class="row">
-    <ul class="list-group list-unstyled">
-      <li> <h2>Instructions:</h2> </li>
-      <li>Upload CSV file containing columns "location", "latitude", "longitude", and "budget".</li>
-      <li>The first entry of your file should be your dispatch location.</li>
-      <li>Alternatively, paste data into the text area or select from sample data bellow.</li>
-      </ul>
-    </div>
-    <div class="row mt-5">
-      <ul class="list-group list-unstyled">
-        <li>
-          <label for="file" class="form-label">Upload File</label>
-          <input type="file" class="form-control-file" id="file" accept=".csv" name="file" />
-        </li>
-        <p> OR:</p>
-        <li>
-          <button type="button" id="data1" class="btn btn-primary load-data-set">Load Test Dataset 1</button>
-          <button type="button" id="data2" class="btn btn-primary load-data-set">Load Test Dataset 2</button>
-          <button type="button" id="data3" class="btn btn-primary load-data-set">Load Test Dataset 3</button>
-        </li>
-      </ul>
-    </div>
-    <div class="row mt-5">
+            </div>
 
-        <label for="data-area">Data input</label>
-        <textarea class="form-control" rows=15 name="data-area" id="data-area"></textarea>
+            {# content continue #}
 
+                <div id="image-location">
 
+                </div>
 
-      <button type="button" id="submit-data" class="btn btn-primary">Submit</button>
-    </div>
+                </div>
 
-</div>
-
-<div id="image-location">
-
-
+        </div>
 </div>
 
 

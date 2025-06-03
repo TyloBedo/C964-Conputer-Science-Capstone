@@ -1,21 +1,13 @@
-.form-floating {
-  position: relative;
-  max-width: 300px; /* not relevant */
-  margin: 40px 20px; /* not relevant */
+.sidebar {
+      max-width: 375px;
+      height: 100vh;
+      border-right: 1px solid rgba(0,0,0,.1);
 }
 
-.form-floating:before {
-  content: '';
-  position: absolute;
-  top: 1px; /* border-width (default by BS) */
-  left: 1px; /* border-width (default by BS) */
-  width: calc(100% - 14px); /* to show scrollbar */
-  height: 32px;
-  border-radius: 4px; /* (default by BS) */
-  background-color: #ffffff;
+.step2 {
+      display: none;
 }
 
-.form-floating textarea.form-control {
-  padding-top: 32px; /* height of pseudo element */
-  min-height: 80px; /* not relevant */
+.step3 {
+      display: none;
 }

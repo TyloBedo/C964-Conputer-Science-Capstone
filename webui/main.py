@@ -1,19 +1,25 @@
 from fastapi import FastAPI, Request
-from pydantic import BaseModel
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 from pathlib import Path
 from route_analyzer import RouteAnalyzer
 
-app_path:Path = Path(__file__).parent
+app = FastAPI()
 
 data_path:Path = Path(__file__).parent.parent / "data"
+app_path:Path = Path(__file__).parent
 
-app = FastAPI()
 
 app.mount("/static", StaticFiles(directory=app_path / "static"), name="static")
 templates = Jinja2Templates(directory=app_path / "templates")
+
+############
+##
+##  navigation routes
+##
+############
 
 @app.get("/", name="index", response_class=HTMLResponse)
 def index(request: Request):
@@ -27,12 +33,26 @@ def about(request: Request):
         request=request, name="about.html"
     )
 
-
 @app.get("/documentation", name="documentation", response_class=HTMLResponse)
 def documentation(request: Request):
     return templates.TemplateResponse(
         request=request, name="documentation.html"
     )
+
+############
+##
+##  Navigation routes end
+##
+############
+
+
+
+############
+##
+##  Data management routes
+##
+############
+
 
 @app.get("/load-data/{dataset_id}")
 def load_data(dataset_id: str):
@@ -48,9 +68,12 @@ class DataObject(BaseModel):
 @app.post("/submit-data")
 def submit_data(data: DataObject):
     ra = RouteAnalyzer(8,26, data.data)
-
     print(ra.df)
-
     return {"data": ra.plot_route()}
 
+############
+##
+##  Data management routes end
+##
+############
 
