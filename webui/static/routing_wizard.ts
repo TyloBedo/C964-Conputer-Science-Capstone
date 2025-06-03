@@ -65,6 +65,7 @@ function step3():void {
 
         //Setup step 3
         load_image(data['data'], "team-plot")
+        load_image(data['labor_plot'], "labor-plot")
         document.getElementById("route-table").innerHTML = data['table'];
         go_to_step(3)
 

@@ -4,9 +4,11 @@ from io import BytesIO
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
+import matplotlib.ticker as mtick
 
 
 def scatter_locations(df) -> str:
+
     plt.scatter(df['x'], df['y'])
 
     plt.scatter(0, 0, color='red')
@@ -17,14 +19,7 @@ def scatter_locations(df) -> str:
     plt.xlabel("Miles")
     plt.ylabel("Miles")
 
-    buf = BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-    base64_str:str = base64.b64encode(buf.read()).decode('utf-8')
-    data_uri:str = f"data:image/png;base64,{base64_str}"
-    plt.clf()
-
-    return data_uri
+    return get_plot_image()
 
 
 def plot_route(df, df2) -> str:
@@ -44,6 +39,31 @@ def plot_route(df, df2) -> str:
     plt.xlabel("Miles")
     plt.ylabel("Miles")
     plt.legend()
+
+    return get_plot_image()
+
+
+def labor_percentage(df):
+
+    fig, ax = plt.subplots()
+    bars = ax.bar(df['team'], df['travel_percent'])
+    ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0))
+    ax.bar_label(bars, labels=[f'{x.get_height():.02%}' for x in bars])
+
+    plt.axhline(y=.1, color='r', linestyle='--')
+    plt.ylim(0, .15)
+
+    plt.title("Estimated Labor Percentage Per Team")
+    plt.xlabel("Team")
+    plt.ylabel("Labor Percentage")
+
+
+    return get_plot_image()
+
+
+
+
+def get_plot_image():
 
     # Save the figure to a buffer
     buf = BytesIO()

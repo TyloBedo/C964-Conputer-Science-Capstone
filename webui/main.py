@@ -86,12 +86,13 @@ def submit_data(data: DataObject):
     ra = RouteAnalyzer(data.teams,data.employees, data.job_data)
     plot = plot_route(ra.df, ra.rd.df)
 
-    routes = [1,2,3]
+    plot2 = labor_percentage(ra.df)
+
     context = {"df":ra.df}
 
     table_template = templates.get_template('data_table.html').render(context)
 
-    return {"data": plot, "table": table_template}
+    return {"data": plot, 'labor_plot': plot2, "table": table_template}
 
 ############
 ##
