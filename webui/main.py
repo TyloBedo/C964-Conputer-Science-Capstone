@@ -1,3 +1,6 @@
+import base64
+from io import BytesIO
+
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -5,6 +8,11 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from pathlib import Path
 from route_analyzer import RouteAnalyzer
+from routing_data import RoutingData
+from webui.make_plots import *
+
+
+
 
 app = FastAPI()
 
@@ -62,14 +70,28 @@ def load_data(dataset_id: str):
         return {'data': data}
 
 
-
 class DataObject(BaseModel):
-    data:str
+    job_data:str
+    teams:int
+    employees:int
+
 @app.post("/submit-data")
 def submit_data(data: DataObject):
-    ra = RouteAnalyzer(8,26, data.data)
-    print(ra.df)
-    return {"data": ra.plot_route()}
+    rd = RoutingData(8, 26, data.job_data)
+    plot = scatter_locations(rd.df)
+    return {"data": plot}
+
+@app.post("/submit-final")
+def submit_data(data: DataObject):
+    ra = RouteAnalyzer(data.teams,data.employees, data.job_data)
+    plot = plot_route(ra.df, ra.rd.df)
+
+    routes = [1,2,3]
+    context = {"df":ra.df}
+
+    table_template = templates.get_template('data_table.html').render(context)
+
+    return {"data": plot, "table": table_template}
 
 ############
 ##

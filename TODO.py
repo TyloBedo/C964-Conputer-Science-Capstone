@@ -1,7 +1,6 @@
 # TODO
 #   WebUI workflow...
 #       Page 2:
-#           We don't actually NEED this....
 #           Need to also enter # of teams and people
 #           WebUI sends data to backend for processing
 #           Backend processes data. Checks if enough EMP were entered

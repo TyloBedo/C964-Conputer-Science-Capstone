@@ -1,0 +1,41 @@
+<table class="table table-bordered table-striped" style="width:auto; font-size:large; align-items: center; ">
+    <thead style="text-align: center" class="bg-primary">
+        <tr>
+            <th>Team #</th>
+            <th>Number of People</th>
+            <th>Job Route</th>
+            <th>Total Travel Distance</th>
+        </tr>
+    </thead>
+    <tbody style="text-align: center" >
+
+
+    {% set tc = namespace(tc = 0) %}
+    {% set ec = namespace(ec = 0) %}
+    {% set td = namespace(td = 0.0) %}
+
+    {%  for team in df.itertuples() %}
+        {%  set tc.tc = tc.tc + 1 %}
+        {%  set ec.ec = ec.ec + team['team_size'] %}
+        {%  set td.td = td.td + team['distance'] %}
+        <tr>
+            <td>Team {{ team['team'] + 1 }}</td>
+            <td> {{ team['team_size'] }} </td>
+            <td>
+            {{ team['route_string'] }}
+            </td>
+            <td>{{ "%.2f"|format(team['distance'] ) }} miles  </td>
+        </tr>
+
+    {%  endfor %}
+
+    <tr>
+        <th> Total Resources Utilized</th>
+        <td> Teams: {{tc.tc}} <br> Employees: {{ ec.ec }}</td>
+        <th> Total Travel Distance</th>
+        <td> {{"%.2f"|format(td.td)}} Miles</td>
+    </tr>
+
+
+    </tbody>
+</table>

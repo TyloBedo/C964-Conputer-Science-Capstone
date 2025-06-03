@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Callable
 from io import StringIO
 import pandas as pd
 import matplotlib.pyplot as plt
