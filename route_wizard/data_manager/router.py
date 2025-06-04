@@ -1,9 +1,6 @@
 from typing import Callable
-
 import pandas as pd
-
-from routing_data import RoutingData
-
+from .routing_data import RoutingData
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 
@@ -32,7 +29,7 @@ class Router:
 
         self._set_dimensions()
 
-
+    # O(n)
     def _set_demands(self):
         # demands is budget minutes per jobs.
         self.demands:list[int] = self.rd.df['budget'].tolist()
@@ -40,7 +37,7 @@ class Router:
 
         # interestingly, demands * 1.1 gives better results sometimes
         # 300 is max cleaning minutes per person
-        # 1.25 is a modifer because OT is okay.
+        # 1.25 is a modifier because OT is okay.
         max_demand:float = 300 * 1.25
 
         if total_demands / self.employees > max_demand:
@@ -57,6 +54,7 @@ class Router:
         self.capacities:list[int] = \
             [int(capacity * max_demand) for capacity in self.team_sizes]
 
+    # O(n)
     def _set_dimensions(self):
 
         distance_callback_index = self.routing.RegisterTransitCallback(self.get_distance)
@@ -85,7 +83,7 @@ class Router:
             "Capacity",
         )
 
-
+    # O(...) good question
     def solve(self):
         search_parameters = pywrapcp.DefaultRoutingSearchParameters()
         search_parameters.first_solution_strategy = (
@@ -104,18 +102,19 @@ class Router:
     #
     ###############################
 
+    # O(n)
     def make_cost_callback(self, vehicle) -> Callable[[int, int], int]:
-
         def cost_callback(l1:int, l2:int) -> int:
             return self.get_distance(l1, l2) * self.team_sizes[vehicle]
 
         return cost_callback
-
+    # O(n)
     def demand_callback(self, l1:int) -> int:
         """Returns the demand of the node."""
         from_node:int = self.manager.IndexToNode(l1)
         return self.demands[from_node]
 
+    # O(n)
     def get_distance(self, l1:int, l2:int) -> int:
         """Returns the distance between the two nodes."""
         from_node:int = self.manager.IndexToNode(l1)
@@ -127,6 +126,7 @@ class Router:
     #   "Callback" functions end
     #
     ###############################
+
 
     def _parse_solution(self, solution):
         for team in range(self.teams):

@@ -4,18 +4,15 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from pathlib import Path
-from router import Router
-from routing_data import RoutingData
-from webui.make_plots import *
-
-
+from .data_manager import Router
+from .data_manager import RoutingData
+from .make_plots import *
 
 
 app = FastAPI()
 
-data_path:Path = Path(__file__).parent.parent / "data"
+data_path:Path = Path(__file__).parent / "data_manager/data"
 app_path:Path = Path(__file__).parent
-
 
 app.mount("/static", StaticFiles(directory=app_path / "static"), name="static")
 templates = Jinja2Templates(directory=app_path / "templates")
@@ -46,22 +43,12 @@ def documentation(request: Request):
 
 ############
 ##
-##  Navigation routes end
-##
-############
-
-
-
-############
-##
 ##  Data management routes
 ##
 ############
 
-
 @app.get("/load-data/{dataset_id}")
 def load_data(dataset_id: str):
-    print("yes")
     with open(data_path / f"test_{dataset_id}.csv", "r") as file:
         data:str = file.read()
         return {'data': data}
@@ -76,8 +63,8 @@ class DataObject(BaseModel):
 @app.post("/submit-data")
 def submit_data(data: DataObject):
     rd = RoutingData(data.job_data)
-    min_employees: int = -(int(rd.df['budget'].sum()) // -375) + 1
-    min_teams: int = -(min_employees // -4)
+    min_employees:int = max(-(int(rd.df['budget'].sum()) // -375) + 1, 2)
+    min_teams:int = max(-(min_employees // -4), 1)
     if data.step == 1:
         plot = scatter_locations(rd.df)
         return {"data": plot, "min_employees": min_employees, "min_teams": min_teams}
@@ -91,9 +78,7 @@ def submit_data(data: DataObject):
 
         plot = plot_route(router.df, rd.df)
         plot2 = labor_percentage(router.df)
-
-        context = {"df": router.df}
-        table_template = templates.get_template('data_table.html').render(context)
+        table_template = templates.get_template('data_table.html').render({"df": router.df})
 
         return {"data": plot, 'labor_plot': plot2, "table": table_template}
 

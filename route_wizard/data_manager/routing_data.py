@@ -18,9 +18,6 @@ class RoutingData:
 
         self._generate_distance_matrix()
 
-
-
-
     # O(n)
     def _normalize_coordinates(self):
         # normalize coordinates so home location is centered 0.0, 0.0
@@ -55,7 +52,6 @@ class RoutingData:
                 # Multiply distance by 100 to maintain precision.
                 self.distance_matrix[l1][l2] = int(distance * 100)
                 self.distance_matrix[l2][l1] = int(distance * 100)
-
 
 
     #O(n)
