@@ -7,7 +7,7 @@ import math
 class RoutingData:
 
     # O(n)
-    def __init__(self, teams:int, emps:int, data:Path|str):
+    def __init__(self, data:Path|str):
 
         if type(data) == str:
             self.df = pd.read_csv(StringIO(data))
@@ -18,32 +18,7 @@ class RoutingData:
 
         self._generate_distance_matrix()
 
-        self.teams:int = teams # vehicles,
 
-        # demands is budget minutes per jobs.
-        self.demands:list[int] = self.df['budget'].tolist()  #[20 for _ in range(len(self.distance_matrix))]
-
-        total_demands:int = self.df['budget'].sum()
-
-        # interestingly, demands * 1.1 gives better results sometimes
-        # 300 is max cleaning minutes per person
-        # 1.25 is a modifer because OT is okay.
-        max_demand:float = 300 * 1.25
-
-        if total_demands / emps > max_demand:
-            # need some more testing on this. Doesn't catch all errors.
-            raise CapacityError("Not enough employees!")
-
-
-        # we need to figure out how to distribute 2 3 or 4 person teams
-        # ideally we will also test different distributions...
-        # for now lets just distribute out the employees we have..
-        self.team_sizes = [emps // teams] * teams
-        for i in range(emps % teams ):
-            self.team_sizes[i] += 1
-
-        self.capacities:list[int] = \
-            [int(capacity * max_demand) for capacity in self.team_sizes]
 
 
     # O(n)
@@ -102,29 +77,3 @@ class RoutingData:
     def dm(self):
         return self.distance_matrix
 
-
-class CapacityError(Exception):
-    pass
-
-if __name__ == "__main__":
-
-
-    data_path: Path = Path(__file__).resolve().parent / "data/test_data1.csv"
-
-    _teams = 8
-    _emp = 26
-
-    rd = RoutingData(_teams, _emp, data_path)
-
-    #print(rd.distance_matrix)
-    #  0 ->  20 ->  17 ->  9 -> 0
-    print(rd.dm[0][20] / 100)
-    print(rd.dm[20][17] / 100)
-    print(rd.dm[17][9] / 100)
-    print(rd.dm[9][0] / 100)
-
-    #print(rd.demands)
-    #print(rd.capacities)
-    #rd.plot_locations()
-
-    #print (rd.df.loc[0, ['latitude', 'longitude']])

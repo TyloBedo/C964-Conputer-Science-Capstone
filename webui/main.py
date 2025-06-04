@@ -1,13 +1,10 @@
-import base64
-from io import BytesIO
-
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from pathlib import Path
-from route_analyzer import RouteAnalyzer
+from router import Router
 from routing_data import RoutingData
 from webui.make_plots import *
 
@@ -74,29 +71,29 @@ class DataObject(BaseModel):
     job_data:str
     teams:int
     employees:int
+    step:int
 
 @app.post("/submit-data")
 def submit_data(data: DataObject):
-    rd = RoutingData(8, 26, data.job_data)
-    plot = scatter_locations(rd.df)
-    return {"data": plot}
+    rd = RoutingData(data.job_data)
+    min_employees: int = -(int(rd.df['budget'].sum()) // -375) + 1
+    min_teams: int = -(min_employees // -4)
+    if data.step == 1:
+        plot = scatter_locations(rd.df)
+        return {"data": plot, "min_employees": min_employees, "min_teams": min_teams}
+    else:
+        if data.teams < min_teams or data.employees < min_employees:
+            return {"data": "didn't enter minimum number of employees!",
+                    "min_employees": min_employees, "min_teams": min_teams}
 
-@app.post("/submit-final")
-def submit_data(data: DataObject):
-    ra = RouteAnalyzer(data.teams,data.employees, data.job_data)
-    plot = plot_route(ra.df, ra.rd.df)
+        router = Router(data.teams, data.employees, rd)
+        router.solve()
 
-    plot2 = labor_percentage(ra.df)
+        plot = plot_route(router.df, rd.df)
+        plot2 = labor_percentage(router.df)
 
-    context = {"df":ra.df}
+        context = {"df": router.df}
+        table_template = templates.get_template('data_table.html').render(context)
 
-    table_template = templates.get_template('data_table.html').render(context)
-
-    return {"data": plot, 'labor_plot': plot2, "table": table_template}
-
-############
-##
-##  Data management routes end
-##
-############
+        return {"data": plot, 'labor_plot': plot2, "table": table_template}
 

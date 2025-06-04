@@ -15,7 +15,7 @@
 <div class="container-fluid">
     <div class="row">
 {#      sidebar start #}
-        <div class="col-3 sticky-top sidebar">
+        <div class="col-3 sidebar">
 {#            step1 sidebar #}
               <div class="step1">
                   <div class="row mt-3">
@@ -38,8 +38,8 @@
                 <ul style="text-align:center;" class="list-group list-unstyled">
                   <li class="list-group-item"> <h2>Instructions:</h2> </li>
                   <li class="list-group-item">Adjust the number of vehicles and number of employees you have available.</li>
-                  <li class="list-group-item">Based on the budget minutes of your job list you will need at least {{emp}} employees to complete your jobs.</li>
-                  <li class="list-group-item">You will need at least {{teams}} to complete your jobs today.</li>
+                  <li class="list-group-item">Based on the budget minutes of your job list you will need at least <span class="fw-bold" id="emp-count"> </span> employees to complete your jobs.</li>
+                  <li class="list-group-item">You will need at least <span class="fw-bold" id="team-count"> </span>  to complete your jobs today.</li>
                 </ul>
             </div>
 
@@ -47,8 +47,10 @@
             <div style="display: none;" class="row step3">
                 <ul style="text-align:center;" class="list-group list-unstyled">
                     <li class="list-group-item"> <h2>Instructions:</h2> </li>
-                    <li class="list-group-item"> Utilize results!!!</li>
+                    <li class="list-group-item"> Use the table to the right to assign jobs and employees to teams!</li>
+                    <li class="list-group-item"><a href="/"><button type="button" id="data1" class="btn btn-primary">Reset</button></a></li>
                 </ul>
+
             </div>
 
             {# continue sidebar #}
@@ -58,18 +60,18 @@
         <div class="col">
 {#            step1 content #}
                 <div class="row step1" >
-                    <div class="col-6 mt-5">
+                    <div class="col-6 form-group mt-5">
                       <ul class="list-group list-unstyled">
                         <li>
                           <label for="file" class="form-label">Upload File</label>
                           <input type="file" class="form-control-file" id="file" accept=".csv" name="file" />
                         </li>
                       </ul>
-                      <div class="row mt-5 form-group">
+
                         <label for="data-area">Data input</label>
                         <textarea class="form-control" rows=15 name="data-area" id="data-area"></textarea>
-                        <button type="button" id="submit-data" class="btn btn-primary col-xs-2">Next</button>
-                      </div>
+                        <button style="margin-top: 15px;" type="button" class="btn btn-primary next col-xs-2">Next</button>
+
                     </div>
                 </div>
 
@@ -77,14 +79,14 @@
 
                 <div class="row step2 mt-5">
                     <div class="col-4 form-group">
-                            <label for="teams" class="col-sm-2 form-label">Teams</label>
-                            <input type="number" id="teams" class="form-control col-xs-2" name="teams" value="{{teams}}">
+                        <label for="employees" class="col-sm-2 form-label">Employees</label>
+                        <input type="number" id="employees" class="form-control col-xs-2" name="employees" value="26">
+                        <label for="teams" class="col-sm-2 form-label">Teams</label>
+                        <input type="number" id="teams" class="form-control col-xs-2" name="teams" value="8">
+                        <br>
+                        <input type="submit" class="btn btn-primary next col-xs-2" value="Submit ">
 
-                            <label for="employees" class="col-sm-2 form-label">Employees</label>
-                            <input type="number" id="employees" class="form-control col-xs-2" name="employees" value="{{employees}}">
-                            <input type="submit" id="gotostep3" class="btn btn-primary col-xs-2" value="Submit ">
-
-                            <div id="job-plot"> </div>
+                        <div id="job-plot"> </div>
                     </div>
                 </div>
 

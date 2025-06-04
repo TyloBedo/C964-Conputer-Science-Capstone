@@ -1,5 +1,5 @@
-<table class="table table-bordered table-striped" style="width:auto; align-items: center; ">
-    <thead style="text-align: center" class="bg-primary">
+<table class="table table-bordered table-striped" style="width:auto; align-items: center; text-align: center;">
+    <thead class="table-dark">
         <tr>
             <th>Team #</th>
             <th>Number of People</th>
@@ -7,7 +7,7 @@
             <th>Total Travel Distance</th>
         </tr>
     </thead>
-    <tbody style="text-align: center" >
+    <tbody>
 
 
     {% set tc = namespace(tc = 0) %}
@@ -28,13 +28,14 @@
         </tr>
 
     {%  endfor %}
-
-    <tr>
-        <th> Total Resources Utilized</th>
-        <td> Teams: {{tc.tc}} <br> Employees: {{ ec.ec }}</td>
-        <th> Total Travel Distance</th>
-        <td> {{"%.2f"|format(td.td)}} Miles</td>
-    </tr>
+    <tfoot class="table-secondary" style="border-top: 2px solid black;">
+        <tr>
+            <th> Total Resources Utilized</th>
+            <td> Teams: {{tc.tc}} <br> Employees: {{ ec.ec }}</td>
+            <th> Total Travel Distance</th>
+            <td> {{"%.2f"|format(td.td)}} Miles</td>
+        </tr>
+    </tfoot>
 
 
     </tbody>
